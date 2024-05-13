@@ -10,7 +10,7 @@ WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
 PLAYER_VEL = 10
 PLAYER_JUMP = 20
 
-GRAVITY = 6
+GRAVITY = 10
 GRAVITY_REINORCEMENT = 5
 
 pygame.display.set_caption("Running game")
@@ -57,10 +57,28 @@ while running:
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE and player.y - 10 * PLAYER_VEL > HEIGHT - HEIGHT/3 or event.key == pygame.K_w and player.y - 10 * PLAYER_VEL > HEIGHT - HEIGHT/3:
-                 if player.y == ground:
-                    for i in range (0,10):
-                        player.y -= PLAYER_JUMP
-                        draw(player)
+                 if keys_pressed[pygame.K_d]:
+                    if player.y == ground:
+                        for i in range (0,20):
+                            if i < 10:
+                                player.y -= PLAYER_JUMP
+                            if player.x < WIDTH - 30:
+                                player.x += PLAYER_VEL - 5
+                            draw(player)
+                 elif keys_pressed[pygame.K_a]:
+                    if player.y == ground:
+                        for i in range (0,20):
+                            if i < 10:
+                                player.y -= PLAYER_JUMP
+                            if player.x > 0:
+                                player.x -= PLAYER_VEL - 5
+                            draw(player)
+                 else: 
+                     if player.y == ground:
+                         for i in range (0,20):
+                             if i < 10:
+                                 player.y -= PLAYER_JUMP
+                             draw(player)
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LSHIFT:
