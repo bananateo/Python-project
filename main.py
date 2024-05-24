@@ -13,12 +13,22 @@ PLAYER_JUMP = 20
 PLAYER_WIDTH = 25
 PLAYER_HEIGHT = 30
 
+SLASH_WIDTH = 15
+SLASH_HEIGHT = 50
+
 ENEMY_VEL = 5
 ENEMY_HEIGHT = 30
 ENEMY_WIDTH = 50
 
 GRAVITY = 5
 GRAVITY_REINORCEMENT = 15
+
+enemies = []
+enemies_survived = 0
+
+slash_counter = 10
+
+font = pygame.font.Font('freesansbold.ttf', 16)
 
 pygame.display.set_caption("Running game")
 
@@ -71,10 +81,30 @@ def create_enemies(enemies):
         enemies.append(enemy_to_add)
                 
 
-def draw(player,enemies):
+def draw(player, enemies):
     pygame.draw.rect(WINDOW, (0, 0, 0), (player.x, player.y, player.height, player.width))
     for enemy_to_draw in enemies:
         enemy_to_draw.draw()
+
+def player_hit(key_tapped, player, enemies):
+    if key_tapped == pygame.K_RIGHT:
+
+        slash = pygame.Rect(player.x + PLAYER_HEIGHT, player.y + int(PLAYER_WIDTH / 2), SLASH_HEIGHT, SLASH_WIDTH)
+        pygame.draw.rect(WINDOW, (0, 255, 0), (slash.x , slash.y, SLASH_HEIGHT, SLASH_WIDTH))
+        for enemy_to_be_hit in enemies:
+            if pygame.Rect.colliderect(slash, enemy_to_be_hit) is True:
+                enemies.remove(enemy_to_be_hit)
+                return  1
+                
+
+    if key_tapped == pygame.K_DOWN:
+
+        slash = pygame.Rect(player.x + int(PLAYER_WIDTH / 2), player.y + PLAYER_HEIGHT, SLASH_WIDTH, SLASH_HEIGHT)
+        pygame.draw.rect(WINDOW, (0, 255, 0), (slash.x , slash.y, SLASH_WIDTH, SLASH_HEIGHT))
+        for enemy_to_be_hit in enemies:
+            if pygame.Rect.colliderect(slash, enemy_to_be_hit) is True:
+                enemies.remove(enemy_to_be_hit)
+                return 1
 
 
 def player_movement(keys_pressed, player):
@@ -101,6 +131,7 @@ def enemy_movement(enemies):
         enemy_to_move.move()
         if enemy_to_move.x < 0:
             enemies.remove(enemy_to_move)
+            return 1
 
 def is_something_hit(player, enemies):
     for enemy_that_hit in enemies:
@@ -111,9 +142,16 @@ def is_something_hit(player, enemies):
                 if enemy_that_hit.hit(enemy_that_got_hit):
                     enemies.remove(enemy_that_got_hit)
 
-enemies = []
 
 while running:
+
+    text1 = font.render(f'Slashes left:{slash_counter}', True, (0, 0, 0), (255, 255, 255))
+    textRect1 = text1.get_rect()
+    textRect1.center = (0 + textRect1.width / 2, textRect1.height / 2)
+
+    text2 = font.render(f'Enemies survived:{enemies_survived}', True, (0, 0, 0), (255, 255, 255))
+    textRect2 = text2.get_rect()
+    textRect2.center = (WIDTH - textRect2.width / 2, textRect2.height / 2)
 
     clock.tick(FPS)
     WINDOW.fill((255, 255, 255))
@@ -125,6 +163,13 @@ while running:
             running = False
 
         if event.type == pygame.KEYDOWN:
+            
+            if slash_counter > 0:
+                if event.key == pygame.K_RIGHT or event.key == pygame.K_DOWN:
+                    if player_hit(event.key, player, enemies) == 1:
+                        enemies_survived += 1
+                    slash_counter -= 1
+
             if event.key == pygame.K_SPACE and player.y - 10 * PLAYER_VEL > HEIGHT - HEIGHT/3 or event.key == pygame.K_w and player.y - 10 * PLAYER_VEL > HEIGHT - HEIGHT/3:
                  
                  if keys_pressed[pygame.K_d]:
@@ -184,8 +229,11 @@ while running:
                                 break
                         
 
+    WINDOW.blit(text1, textRect1)
+    WINDOW.blit(text2, textRect2)
     create_enemies(enemies)
-    enemy_movement(enemies)
+    if enemy_movement(enemies) == 1:
+        enemies_survived += 1
     player_movement(keys_pressed, player)
     done = is_something_hit(player, enemies)
     if done == True:
