@@ -89,7 +89,7 @@ def draw(player, enemies):
 def player_hit(key_tapped, player, enemies):
     if key_tapped == pygame.K_RIGHT:
 
-        slash = pygame.Rect(player.x + PLAYER_HEIGHT, player.y + int(PLAYER_WIDTH / 2), SLASH_HEIGHT, SLASH_WIDTH)
+        slash = pygame.Rect(player.x + PLAYER_HEIGHT, player.y + SLASH_WIDTH // 2, SLASH_HEIGHT, SLASH_WIDTH)
         pygame.draw.rect(WINDOW, (0, 255, 0), (slash.x , slash.y, SLASH_HEIGHT, SLASH_WIDTH))
         for enemy_to_be_hit in enemies:
             if pygame.Rect.colliderect(slash, enemy_to_be_hit) is True:
