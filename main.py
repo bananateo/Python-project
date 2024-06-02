@@ -18,8 +18,8 @@ SLASH_WIDTH = 20
 SLASH_HEIGHT = 60
 
 ENEMY_VEL = 5
-ENEMY_HEIGHT = 60
-ENEMY_WIDTH = 60
+ENEMY_HEIGHT = 40
+ENEMY_WIDTH = 40
 GROUND_ENEMY_WIDTH = 50
 GROUND_ENEMY_HEIGHT = 50
 
@@ -30,6 +30,7 @@ ADDED_GRAVITY = 0.6
 JUMP_HEIGHT = 20
 CUR_JUMP_VELOCITY = JUMP_HEIGHT
 
+max_enemies = 5
 enemies = []
 ground_enemies = []
 enemies_survived = 0
@@ -69,7 +70,7 @@ running = True
 
 ground = HEIGHT - 160
 
-player = pygame.Rect(0, ground , PLAYER_HEIGHT, PLAYER_WIDTH)
+player = pygame.Rect(0, ground - PLAYER_HEIGHT, PLAYER_HEIGHT, PLAYER_WIDTH)
 
 class enemy:
     def __init__(self, x, y):
@@ -107,7 +108,7 @@ def create_enemies(enemies, ground_enemies):
     yes = random.randint(0, 90)
     if yes == 1:
         enemy_x = random.randint(WIDTH, WIDTH + 60)
-        enemy_y = random.randint(int(ground - HEIGHT/4), ground)
+        enemy_y = random.randint(0 , ground)
         enemy_to_add = enemy(enemy_x, enemy_y)
         enemies.append(enemy_to_add)
 
@@ -221,7 +222,7 @@ while running:
     textRect1 = text1.get_rect()
     textRect1.center = (0 + textRect1.width / 2, textRect1.height / 2)
 
-    text2 = font.render(f'Enemies survived:{enemies_survived}', True, (0, 0, 0))
+    text2 = font.render(f'Score points:{enemies_survived}', True, (0, 0, 0))
     textRect2 = text2.get_rect()
     textRect2.center = (WIDTH - textRect2.width / 2, textRect2.height / 2)
 
@@ -300,8 +301,9 @@ while running:
             CUR_JUMP_VELOCITY = JUMP_HEIGHT
 
 
-    if len(enemies) + len(ground_enemies) < 11:
+    if len(enemies) + len(ground_enemies) < int(max_enemies):
         create_enemies(enemies, ground_enemies)
+        max_enemies += 0.2
     if enemy_movement(enemies, ground_enemies) == 1:
         enemies_survived += 1
 
