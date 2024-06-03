@@ -24,7 +24,7 @@ GROUND_ENEMY_WIDTH = 50
 GROUND_ENEMY_HEIGHT = 50
 
 GRAVITY = 5
-GRAVITY_REINORCEMENT = 15
+GRAVITY_REINFORCEMENT = 15
 ADDED_GRAVITY = 0.6
 
 JUMP_HEIGHT = 20
@@ -70,8 +70,6 @@ running = True
 
 ground = HEIGHT - 160
 
-player = pygame.Rect(0, ground - PLAYER_HEIGHT, PLAYER_HEIGHT, PLAYER_WIDTH)
-
 class enemy:
     def __init__(self, x, y):
         self.x = x
@@ -103,6 +101,94 @@ class ground_enemy(enemy):
     def draw(self):
         WINDOW.blit(Ground_enemy_image, (self.x, self.y))
 
+class player:
+    def __init__(self):
+        self.rect = pygame.Rect(0, ground, PLAYER_HEIGHT, PLAYER_WIDTH)
+        self.jumping = False
+
+    def is_player_jumping(self, jumping, double_jumping):
+        if jumping == True or double_jumping == True:
+            self.jumping = True
+        else:
+            self.jumping = False
+
+    def draw(self):
+
+        if self.jumping == True:
+            WINDOW.blit(ninja_jump, (self.rect.x, self.rect.y))
+
+        else:
+            WINDOW.blit(ninja_run, (self.rect.x, self.rect.y)) 
+
+
+    def player_movement(self, keys_pressed):
+
+        if keys_pressed[pygame.K_a] and self.rect.x - PLAYER_VEL >= 0:
+            self.rect.x -= PLAYER_VEL
+
+        if keys_pressed[pygame.K_d] and self.rect.x + PLAYER_VEL <= WIDTH - 30:
+            self.rect.x += PLAYER_VEL
+
+        if keys_pressed[pygame.K_s] and self.rect.y < ground:
+            if self.rect.y + GRAVITY_REINFORCEMENT > ground:
+                self.rect.y = ground
+            else: 
+                self.rect.y += GRAVITY_REINFORCEMENT
+    
+        if self.rect.y < ground:
+            if self.rect.y + GRAVITY > ground:
+                self.rect.y = ground
+            else: 
+                self.rect.y += GRAVITY
+
+    def player_dash(self, keys_pressed):
+        if keys_pressed[pygame.K_d]:
+            for i in range (0,10):
+                self.rect.x += PLAYER_VEL
+                draw(enemies, ground_enemies)
+                if self.rect.x >= WIDTH - 30:
+                    break
+                
+        if keys_pressed[pygame.K_a]:
+            for i in range (0,10):
+                self.rect.x -= PLAYER_VEL
+                draw(enemies, ground_enemies)
+                if self.rect.x - PLAYER_VEL < 0:
+                    break
+    def player_hit(self, key_tapped, enemies, ground_enemies):
+    
+        if key_tapped == pygame.K_RIGHT:
+
+            slash = pygame.Rect(self.rect.x + PLAYER_WIDTH, self.rect.y, SLASH_HEIGHT, SLASH_WIDTH)
+            WINDOW.blit(slash_right, (slash.x, slash.y))
+            for enemy_to_be_hit in enemies:
+                if pygame.Rect.colliderect(slash, enemy_to_be_hit.rect) is True:
+                    enemies.remove(enemy_to_be_hit)
+                    return 1
+                
+            for enemy_to_be_hit in ground_enemies:
+                if pygame.Rect.colliderect(slash, enemy_to_be_hit.rect) is True:
+                    ground_enemies.remove(enemy_to_be_hit)
+                    return 1
+                    
+        if key_tapped == pygame.K_DOWN:
+
+            slash = pygame.Rect(self.rect.x + PLAYER_WIDTH // 2, self.rect.y + PLAYER_HEIGHT, SLASH_WIDTH, SLASH_HEIGHT)
+            WINDOW.blit(slash_down, (slash.x, slash.y))
+            for enemy_to_be_hit in enemies:
+                if pygame.Rect.colliderect(enemy_to_be_hit.rect, slash) is True:
+                    enemies.remove(enemy_to_be_hit)
+                    return 2
+                
+            for enemy_to_be_hit in ground_enemies:
+                if pygame.Rect.colliderect(enemy_to_be_hit.rect, slash) is True:
+                    ground_enemies.remove(enemy_to_be_hit)
+                    return 2
+        return 0
+
+Player = player()
+
+
 
 def create_enemies(enemies, ground_enemies):
     yes = random.randint(0, 90)
@@ -118,66 +204,14 @@ def create_enemies(enemies, ground_enemies):
         ground_enemies.append(enemy_to_add)
                 
 
-def draw(player, enemies, ground_enemies):
-    if player.y == ground:
-        WINDOW.blit(ninja_run, (player.x, player.y))
-    else:
-        WINDOW.blit(ninja_jump, (player.x, player.y))
+def draw(enemies, ground_enemies):
+
+    Player.draw()
     for enemy_to_draw in enemies:
         enemy_to_draw.draw()
     
     for enemy_to_draw in ground_enemies:
         enemy_to_draw.draw()
-
-def player_hit(key_tapped, player, enemies, ground_enemies):
-    
-    if key_tapped == pygame.K_RIGHT:
-
-        slash = pygame.Rect(player.x + PLAYER_WIDTH, player.y, SLASH_HEIGHT, SLASH_WIDTH)
-        WINDOW.blit(slash_right, (slash.x, slash.y))
-        for enemy_to_be_hit in enemies:
-            if pygame.Rect.colliderect(slash, enemy_to_be_hit.rect) is True:
-                enemies.remove(enemy_to_be_hit)
-                return 1
-            
-        for enemy_to_be_hit in ground_enemies:
-            if pygame.Rect.colliderect(slash, enemy_to_be_hit.rect) is True:
-                ground_enemies.remove(enemy_to_be_hit)
-                return 1
-                
-    if key_tapped == pygame.K_DOWN:
-
-        slash = pygame.Rect(player.x + PLAYER_WIDTH // 2, player.y + PLAYER_HEIGHT, SLASH_WIDTH, SLASH_HEIGHT)
-        WINDOW.blit(slash_down, (slash.x, slash.y))
-        for enemy_to_be_hit in enemies:
-            if pygame.Rect.colliderect(enemy_to_be_hit.rect, slash) is True:
-                enemies.remove(enemy_to_be_hit)
-                return 2
-            
-        for enemy_to_be_hit in ground_enemies:
-            if pygame.Rect.colliderect(enemy_to_be_hit.rect, slash) is True:
-                ground_enemies.remove(enemy_to_be_hit)
-                return 2
-    return 0
-
-
-def player_movement(keys_pressed, player):
-
-    if keys_pressed[pygame.K_a] and player.x - PLAYER_VEL >= 0:
-        player.x -= PLAYER_VEL
-
-    if keys_pressed[pygame.K_d] and player.x + PLAYER_VEL <= WIDTH - 30:
-        player.x += PLAYER_VEL
-
-    if keys_pressed[pygame.K_s] and player.y < ground:
-       if player.y + GRAVITY_REINORCEMENT > ground:
-           player.y = ground
-       else: player.y += GRAVITY_REINORCEMENT
- 
-    if player.y < ground:
-       if player.y + GRAVITY > ground:
-           player.y = ground
-       else: player.y += GRAVITY
 
 
 def enemy_movement(enemies, ground_enemies):
@@ -192,9 +226,9 @@ def enemy_movement(enemies, ground_enemies):
             ground_enemies.remove(enemy_to_move)
             return 1
 
-def is_something_hit(player, enemies, ground_enemies):
+def is_something_hit(enemies, ground_enemies):
     for enemy_that_hit in enemies:
-        if enemy_that_hit.hit(player) == True:
+        if enemy_that_hit.hit(Player.rect) == True:
             return True
         for enemy_that_got_hit in enemies:
             if enemy_that_got_hit != enemy_that_hit:
@@ -202,18 +236,18 @@ def is_something_hit(player, enemies, ground_enemies):
                     enemies.remove(enemy_that_got_hit)
 
     for enemy_that_hit in ground_enemies:
-        if enemy_that_hit.hit(player) == True:
+        if enemy_that_hit.hit(Player.rect) == True:
             return True
         for enemy_that_got_hit in enemies:
             if enemy_that_got_hit != enemy_that_hit:
-                if enemy_that_hit.hit(enemy_that_got_hit):
-                    enemies.remove(enemy_that_got_hit)
+                if enemy_that_hit.hit(enemy_that_got_hit.rect):
+                    enemies.remove(enemy_that_got_hit.rect)
 
     for enemy_that_hit in ground_enemies:
         for enemy_that_got_hit in ground_enemies:
             if enemy_that_got_hit != enemy_that_hit:
-                if enemy_that_hit.hit(enemy_that_got_hit):
-                    ground_enemies.remove(enemy_that_got_hit)
+                if enemy_that_hit.hit(enemy_that_got_hit.rect):
+                    ground_enemies.remove(enemy_that_got_hit.rect)
 
 while running:
 
@@ -238,13 +272,13 @@ while running:
             
             if slash_counter > 0:
                 if event.key == pygame.K_RIGHT or event.key == pygame.K_DOWN:
-                    result_from_slash = player_hit(event.key, player, enemies, ground_enemies)
+                    result_from_slash = Player.player_hit(event.key, enemies, ground_enemies)
                     if result_from_slash == 1:
                         enemies_survived += 1
                         
                     if result_from_slash == 2:
                         enemies_survived += 1
-                        double_jumping = 1
+                        double_jumping = True
                     slash_counter -= 1
 
             if event.key == pygame.K_SPACE:
@@ -253,66 +287,54 @@ while running:
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LSHIFT:
-
-                if keys_pressed[pygame.K_d]:
-                    for i in range (0,10):
-                        player.x += PLAYER_VEL
-                        draw(player, enemies, ground_enemies)
-                        if player.x >= WIDTH - 30:
-                            break
-
-                if keys_pressed[pygame.K_a]:
-                    for i in range(0,10):
-                        player.x -= PLAYER_VEL
-                        draw(player, enemies, ground_enemies)
-                        if player.x <= 0:
-                                break
-                        
+                Player.player_dash(keys_pressed)
 
     WINDOW.blit(text1, textRect1)
     WINDOW.blit(text2, textRect2)
-
 
     if double_jumping:
             if jumping == True:
                 jumping = False
                 CUR_JUMP_VELOCITY = JUMP_HEIGHT
-            if player.y - CUR_JUMP_VELOCITY > ground:
+            if Player.rect.y - CUR_JUMP_VELOCITY > ground:
                 double_jumping = False
                 CUR_JUMP_VELOCITY = JUMP_HEIGHT
-            if player.y - GRAVITY_REINORCEMENT > ground:
+            if Player.rect.y - GRAVITY_REINFORCEMENT > ground:
                 double_jumping = False
-            player.y -= CUR_JUMP_VELOCITY
+            Player.rect.y -= CUR_JUMP_VELOCITY
             CUR_JUMP_VELOCITY -= ADDED_GRAVITY
             if CUR_JUMP_VELOCITY < -JUMP_HEIGHT:
                 double_jumping = False
                 CUR_JUMP_VELOCITY = JUMP_HEIGHT
 
     if jumping:
-        if player.y - CUR_JUMP_VELOCITY > ground:
+        if Player.rect.y - CUR_JUMP_VELOCITY > ground:
             jumping = False
             CUR_JUMP_VELOCITY = JUMP_HEIGHT
-        if player.y - GRAVITY_REINORCEMENT > ground:
+        if Player.rect.y - GRAVITY_REINFORCEMENT > ground:
             jumping = False
-        player.y -= CUR_JUMP_VELOCITY
+        Player.rect.y -= CUR_JUMP_VELOCITY
         CUR_JUMP_VELOCITY -= ADDED_GRAVITY
         if CUR_JUMP_VELOCITY < -JUMP_HEIGHT:
             jumping = False
             CUR_JUMP_VELOCITY = JUMP_HEIGHT
 
+    Player.is_player_jumping(jumping, double_jumping)
+            
 
     if len(enemies) + len(ground_enemies) < int(max_enemies):
         create_enemies(enemies, ground_enemies)
-        max_enemies += 0.2
+        max_enemies += 0.05
+
     if enemy_movement(enemies, ground_enemies) == 1:
         enemies_survived += 1
 
-    player_movement(keys_pressed, player)
-    done = is_something_hit(player, enemies, ground_enemies)
+    Player.player_movement(keys_pressed)
+    done = is_something_hit(enemies, ground_enemies)
 
     if done == True:
         running = False
         
-    draw(player, enemies, ground_enemies) 
-    pygame.display.flip()
-    print(f"Enemies survived:{enemies_survived}")
+    draw(enemies, ground_enemies) 
+    pygame.display.flip() 
+    print(f"Score: {enemies_survived}") 
